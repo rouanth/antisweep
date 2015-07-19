@@ -114,7 +114,7 @@ function get_dialog(pos) {
                 dialog.style['left'] = e.clientX + 'px';
                 dialog.style['top']  = e.clientY + 'px';
                 var types = [ '1', '2', '3', '4', '5', '6', '7', '8',
-                '0', 'b', 'q' ];
+                'q', 'b', '0' ];
                 function get_click_callback(type) {
                         return function () {
                                 csweep.field[pos.row][pos.col].type = type;
