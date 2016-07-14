@@ -10,17 +10,17 @@
 <body onload="set_initial_page()">
 <table id="main_table">
 <tr>
-<td>☀ <input type="number" id="mines_count" onchange="apply_form()" /> ☀</td>
+<td>☀ <input type="number" id="mines_count" oninput="apply_form()" /> ☀</td>
 <td><button id="clearbtn" onclick="apply_form()">✗</button></td>
 </tr>
 <tr>
 <td><table id="sweep_field"></table></td>
 <td style="text-align: left">↑<br />
-        <input type="number" id="field_height" onchange="apply_form()" /><br />
+        <input type="number" id="field_height" oninput="apply_form()" /><br />
         ↓</td>
 </tr>
 <tr>
-<td>← <input type="number" id="field_width" onchange="apply_form()" /> →</td>
+<td>← <input type="number" id="field_width" oninput="apply_form()" /> →</td>
 <td><button id="solvebtn" onclick="solve()">✓</button></td>
 </tr>
 </table>
