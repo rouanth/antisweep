@@ -44,16 +44,13 @@ table {
 #sweep_field tr, td {
         border: 0px solid lightgray;
         background-color: #aaaaaa;
+        text-align: center;
 }
 
 #sweep_field td, table.dialog td {
         cursor: pointer;
         width: 1.5em;
         height: 1.5em;
-}
-
-td {
-        text-align: center;
 }
 
 .cell_q, .cell_b { background-color: #454545; }
