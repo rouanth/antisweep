@@ -118,7 +118,6 @@ function get_dialog(pos) {
                 function get_click_callback(type) {
                         return function () {
                                 csweep.field[pos.row][pos.col].type = type;
-                                csweep.changed = true;
                                 close_dialog();
                                 update_field();
                         }
@@ -146,11 +145,6 @@ function get_dialog(pos) {
 }
 
 function apply_form() {
-        if (csweep.changed) {
-                var do_clear = confirm('Really?');
-                if (!do_clear)
-                        return;
-        }
         var width = document.getElementById('field_width').value;
         var height = document.getElementById('field_height').value;
         var mines = document.getElementById('mines_count').value;

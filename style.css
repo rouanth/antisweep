@@ -2,6 +2,10 @@ body {
         background-color: lemonchiffon;
 }
 
+input[type="number"] {
+        width: 3em;
+}
+
 table.dialog {
         border: 1px solid black;
         background-color: #0f0f0f;
@@ -21,15 +25,15 @@ table.dialog tr, td {
         padding: 5px;
 }
 
-#params {
-        border: 1px dotted grey;
-        background-color: lightsalmon;
-        padding: 0px 5px 5px;
-}
-
 #solvebtn {
         color: white;
         background-color: yellowgreen;
+        margin: 5px 5px;
+}
+
+#clearbtn {
+        color: white;
+        background-color: red;
         margin: 5px 5px;
 }
 
@@ -37,54 +41,29 @@ table {
         border: 1px solid black;
 }
 
-tr, td {
+#sweep_field tr, td {
         border: 0px solid lightgray;
         background-color: #aaaaaa;
 }
 
-td {
-        text-align: center;
+#sweep_field td, table.dialog td {
         cursor: pointer;
         width: 1.5em;
         height: 1.5em;
 }
 
-.cell_q, .cell_b {
-        background-color: #454545;
+td {
+        text-align: center;
 }
 
-.cell_b {
-        color: pink;
-}
+.cell_q, .cell_b { background-color: #454545; }
+.cell_b { color: pink; }
+.cell_1 { color: blue; }
+.cell_2 { color: green; }
+.cell_3 { color: red; } 
+.cell_4 { color: darkblue; }
+.cell_5 { color: brown; }
+.cell_6 { color: cyan; }
+.cell_7 { color: black; }
+.cell_8 { color: dimgray; }
 
-.cell_1 {
-        color: blue;
-}
-
-.cell_2 {
-        color: green;
-}
-
-.cell_3 {
-        color: red;
-}
-
-.cell_4 {
-        color: darkblue;
-}
-
-.cell_5 {
-        color: brown;
-}
-
-.cell_6 {
-        color: cyan;
-}
-
-.cell_7 {
-        color: black;
-}
-
-.cell_8 {
-        color: dimgray;
-}
