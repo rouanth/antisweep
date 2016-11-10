@@ -21,9 +21,19 @@ function test () {
 	C[1][1] = C[1][2] = C[1][3] = true;
 	C[2][2] = true;
 
+	/* DX = B:
+	 * 1 2 x x 1
+	 * _ x x x x
+	 */
+	var D = create_matrix(3, 6, function(){return false});
+	D[0][0] = true;
+	D[1][0] = D[1][1] = D[1][2] = true;
+	D[2][3] = D[2][4] = D[2][5] = true;
+
 	return {
 		solve_ab : solve_for_rules(A, B, 2, 3),
-		elim_cb  : eliminate_obvious_rules(C, B)
+		elim_cb  : eliminate_obvious_rules(C, B),
+		split    : split_at_compontents(D, B)
 	};
 }
 
@@ -73,6 +83,47 @@ function eliminate_obvious_rules (A, B) {
 		B : bWork,
 		res : res
 	}
+}
+
+function split_at_compontents (A, B) {
+	var res = [];
+	var assigned = Object.create(null);
+	for (var i = 0; i < A.height; ++i) {
+		if (i in assigned)
+			continue;
+
+		var comp = [];
+		var curr = Object.create(null);
+		for (var j = 0; j < A.width; ++j) {
+			if (A[i][j]) {
+				curr[j] = true;
+			}
+		}
+
+		for (var k = i; k < A.height; ++k) {
+			if (k in assigned)
+				continue;
+
+			for (var j = 0; j < A.width; ++j) {
+				if (curr[j] && A[k][j]) {
+					comp.push(k);
+					assigned[k] = true;
+					break;
+				}
+			}
+		}
+
+		var a = create_matrix(comp.length, A.width, function (i, j) {
+			return A[comp[i]][j];
+		});
+
+		var b = create_map(comp.length, function(i) {
+			return B[comp[i]];
+		});
+
+		res.push({a: a, b: b});
+	}
+	return res;
 }
 
 /* Find all possible solutions for A * X = B assuming that both a_ij and x_i
