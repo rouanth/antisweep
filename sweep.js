@@ -164,6 +164,16 @@ function set_initial_page() {
         restore_form();
         apply_form();
         document.addEventListener('mousemove', update_popup);
+        document.addEventListener('click', function(e) {
+                var target = e.target;
+                while (target !== null) {
+                        if (/sweep_field_/.test(target.id)) {
+                                return;
+                        }
+                        target = target.parentElement;
+                }
+                close_dialog();
+        });
 }
 
 function solve() {
