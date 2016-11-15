@@ -3,47 +3,47 @@ function isInt(n) {
 }
 
 function create_map(n, func) {
-        var result = [];
-        var i;
-        for (i = 0; i < n; ++i) {
-                result.push(func(i));
-        }
-        return result;
+	var result = [];
+	var i;
+	for (i = 0; i < n; ++i) {
+		result.push(func(i));
+	}
+	return result;
 }
 
 function create_matrix(n, m, func) {
-        var i, j;
-        var result = create_map(n, function(i) {
-                return create_map(m, function (j) {
-                        return func(i, j);
-                });
-        });
-        result.width = m;
-        result.height = n;
-        result.forEach = function (callback, thisArg) {
-                var that = thisArg || this;
-                for (i = 0; i < result.height; ++i) {
-                        for (j = 0; j < result.width; ++j) {
-                                callback(that[i][j], i, j, that);
-                        }
-                }
-        };
-        return result;
+	var i, j;
+	var result = create_map(n, function(i) {
+		return create_map(m, function (j) {
+			return func(i, j);
+		});
+	});
+	result.width = m;
+	result.height = n;
+	result.forEach = function (callback, thisArg) {
+		var that = thisArg || this;
+		for (i = 0; i < result.height; ++i) {
+			for (j = 0; j < result.width; ++j) {
+				callback(that[i][j], i, j, that);
+			}
+		}
+	};
+	return result;
 }
 
 function copy_matrix(matr) {
-        var i, j;
-        var result = [];
-        result.width  = matr.width;
-        result.height = matr.height;
-        for (i = 0; i < matr.height; ++i) {
-                result[i] = [];
-                for (j = 0; j < matr.width; ++j) {
-                        result[i][j] = matr[i][j];
-                }
-        }
-        result.matrForEach = matr.matrForEach;
-        return result;
+	var i, j;
+	var result = [];
+	result.width  = matr.width;
+	result.height = matr.height;
+	for (i = 0; i < matr.height; ++i) {
+		result[i] = [];
+		for (j = 0; j < matr.width; ++j) {
+			result[i][j] = matr[i][j];
+		}
+	}
+	result.matrForEach = matr.matrForEach;
+	return result;
 }
 
 function copy_matrix_wo_col(matr, col) {
