@@ -141,6 +141,16 @@ function split_at_components (A, B) {
 	return res;
 }
 
+function partition_split_idx (A, B) {
+	for (var idx = 0; idx < A.width; ++idx) {
+		for (var r = 0; r < A.height; ++r) {
+			if (A[r][idx])
+				return idx;
+		}
+	}
+	return null;
+}
+
 /* Find all possible solutions for A * X = B assuming that both a_ij and x_i
  * are in {true, false}.
  *
@@ -197,7 +207,7 @@ function solve_for_rules (A, B, min, max) {
 
 	var res = [];
 
-	var splitIdx = 0;
+	var splitIdx = partition_split_idx(aWork, bWork);
 
 	var aWoSplit = copy_matrix_wo_col(aWork, splitIdx);
 
