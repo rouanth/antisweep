@@ -134,7 +134,9 @@ function split_at_components (A, B) {
 			return B[comp[i]];
 		});
 
-		res.push({a: a, b: b});
+		var ixs = comp;
+
+		res.push({a: a, b: b, ixs: ixs});
 	}
 	return res;
 }
