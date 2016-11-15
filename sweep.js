@@ -46,7 +46,7 @@ function create_cell(swp, i, j, probs) {
 			}
 			var popup = document.createElement('div');
 			popup.id  = 'popup';
-			var text = prob.toPrecision(3) + '%';
+			var text = (prob * 100).toPrecision(3) + '%';
 			var textNode = document.createTextNode(text);
 			popup.appendChild(textNode);
 			document.getElementsByTagName('body'
@@ -218,9 +218,30 @@ function solve() {
 	var mines = csweep.mines - bomb_idxs.length;
 	var res = solve_for_rules(A, B, mines, mines);
 
-	console.log(res);
+	if (res) {
+		var probs = create_matrix(csweep.field.height, w,
+				function() { return 0; });
 
-	update_field();
+		for (var i = 0; i < bomb_idxs.length; ++i) {
+			var bidx = bomb_idxs[i];
+			probs[Math.floor(bidx / w)][bidx % w] = -1;
+		}
+
+		for (var i = 0; i < number_idxs.length; ++i) {
+			var nidx = number_idxs[i];
+			probs[Math.floor(nidx / w)][nidx % w] = -1;
+		}
+
+		for (var i = 0; i < free_idxs.length; ++i) {
+			var fidx = free_idxs[i];
+			for (var j = 0; j < res.length; ++j) {
+				probs[Math.floor(fidx / w)][fidx % w]
+					+= res[j][i];
+			}
+			probs[Math.floor(fidx / w)][fidx % w] /= res.length;
+		}
+		update_field(probs);
+	}
 }
 
 function to_hex(c) {
@@ -242,8 +263,8 @@ function get_color(prob) {
 		case -1  :
 			return undefined
 		default  :
-				red = 255 * prob / 100; 
-				green = 255 * (100 - prob) / 200; 
+				red = 255 * prob;
+				green = 255 * (1 - prob);
 	}
 	var red   = to_hex(red);
 	var green = to_hex(green);
