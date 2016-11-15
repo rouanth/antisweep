@@ -177,8 +177,50 @@ function set_initial_page() {
 }
 
 function solve() {
-	var probs = solver.solve(csweep);
-	update_field(probs);
+	var number_idxs = [];
+	var bomb_idxs = [];
+	var free_idxs = [];
+	csweep.field.forEach(function (c, i, j) {
+		var idx = i * csweep.field.width + j
+			if (c.isNumber() || c.isEmpty()) {
+				number_idxs.push(idx)
+			} else if (c.isUnknown()) {
+				free_idxs.push(idx)
+			} else if (c.isBomb()) {
+				bomb_idxs.push(idx);
+			}
+	});
+
+	var w = Number(csweep.field.width);
+	var d = [0, 1, 2, w, w + 2, 2 * w, 2 * w + 1, 2 * w + 2];
+
+	var A = create_matrix(number_idxs.length, free_idxs.length,
+			function () { return false; });
+	var B = create_map(number_idxs.length, function (idx) {
+		var nidx = number_idxs[idx];
+		return Number(csweep.field[
+				Math.floor(nidx / w)][nidx % w].type); });
+
+	for (var i = 0; i < number_idxs.length; ++i) {
+		var nidx = number_idxs[i];
+		for (var j = 0; j < free_idxs.length; ++j) {
+			if (d.indexOf(nidx + w + 1 - free_idxs[j]) !== -1) {
+				A[i][j] = true;
+			}
+		}
+		for (var j = 0; j < bomb_idxs.length; ++j) {
+			if (d.indexOf(nidx + w + 1 - bomb_idxs[j]) !== -1) {
+				--B[i];
+			}
+		}
+	}
+
+	var mines = csweep.mines - bomb_idxs.length;
+	var res = solve_for_rules(A, B, mines, mines);
+
+	console.log(res);
+
+	update_field();
 }
 
 function to_hex(c) {
