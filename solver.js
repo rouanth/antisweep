@@ -44,9 +44,9 @@ function test () {
 	D[2][3] = D[2][4] = D[2][5] = true;
 
 	return {
-		solve_ab : solve_for_rules(A, B, 2, 3),
-		elim_cb  : eliminate_obvious_rules(C, B),
-		split    : split_at_compontents(D, B)
+		solve_ab : solve_ab,
+		elim_cb  : elim_cb,
+		split    : split_at_components(D, B)
 	};
 }
 
@@ -98,7 +98,7 @@ function eliminate_obvious_rules (A, B) {
 	}
 }
 
-function split_at_compontents (A, B) {
+function split_at_components (A, B) {
 	var res = [];
 	var assigned = Object.create(null);
 	for (var i = 0; i < A.height; ++i) {
