@@ -11,15 +11,28 @@ function test () {
 	A[1][2] = A[1][3] = A[1][4] = true;
 	A[2][3] = A[2][4] = A[2][5] = A[2][6] = true;
 
+	var solve_ab = solve_for_rules(A, B, 2, 3);
+	var solve_ab_cond = solve_ab.toString() ===
+		"false,false,true,false,true,false,false,true," +
+		"false,false,true,false,true,false,false,false";
+
+	console.log("Simple test: " + solve_ab_cond);
+
 	/* CX = B, slightly artificial example:
 	 * 1 _ 1
 	 * x 2 x
 	 * _ x _
 	 */
-	var C = create_matrix(3, 4, function(){return false});
-	C[0][1] = true;
-	C[1][1] = C[1][2] = C[1][3] = true;
-	C[2][2] = true;
+	var C = create_matrix(3, 3, function(){return false});
+	C[0][0] = true;
+	C[1][0] = C[1][1] = C[1][2] = true;
+	C[2][1] = true;
+
+	var elim_cb = eliminate_obvious_rules(C, B);
+	var elim_cb_cond = elim_cb.A.height === 0 && elim_cb.B.length === 0 &&
+		elim_cb.res.toString() === "true,true,false";
+
+	console.log("Elimination of obvious rules: " + elim_cb_cond);
 
 	/* DX = B:
 	 * 1 2 x x 1
