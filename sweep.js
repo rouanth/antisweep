@@ -192,7 +192,6 @@ function solve() {
 	});
 
 	var w = Number(csweep.field.width);
-	var d = [0, 1, 2, w, w + 2, 2 * w, 2 * w + 1, 2 * w + 2];
 
 	var A = create_matrix(number_idxs.length, free_idxs.length,
 			function () { return false; });
@@ -201,15 +200,20 @@ function solve() {
 		return Number(csweep.field[
 				Math.floor(nidx / w)][nidx % w].type); });
 
+        var near = function (i, j) {
+                return Math.abs(Math.floor(i / w) - Math.floor(j / w)) <= 1 &&
+                        Math.abs((i % w) - (j % w)) <= 1
+        };
+
 	for (var i = 0; i < number_idxs.length; ++i) {
 		var nidx = number_idxs[i];
 		for (var j = 0; j < free_idxs.length; ++j) {
-			if (d.indexOf(nidx + w + 1 - free_idxs[j]) !== -1) {
+			if (near(nidx, free_idxs[j])) {
 				A[i][j] = true;
 			}
 		}
 		for (var j = 0; j < bomb_idxs.length; ++j) {
-			if (d.indexOf(nidx + w + 1 - bomb_idxs[j]) !== -1) {
+			if (near(nidx, bomb_idxs[j])) {
 				--B[i];
 			}
 		}
