@@ -55,7 +55,8 @@ function eliminate_obvious_rules (A, B) {
 	var aWork = copy_matrix(A);
 	var bWork = B.slice();
 
-	var vars_set = 0;
+	var idxs = create_map(aWork.width, function(i) { return i });
+
 	var obvious;
 	do {
 		obvious = false;
@@ -68,23 +69,28 @@ function eliminate_obvious_rules (A, B) {
 			if ((bWork[i] > rowCnt) || (bWork[i] < 0)) {
 				return null;
 			}
-			if (bWork[i] && (bWork[i] != rowCnt)) {
+			if (bWork[i] && (bWork[i] !== rowCnt)) {
 				continue;
 			}
 
 			obvious = true;
-			for (var j = 0; j < aWork.width + vars_set; ++j) {
-				if (!aWork[i][j-vars_set]) {
+			for (var j = 0; j < aWork.width; ++j){
+				if (!aWork[i][j]) {
 					continue;
 				}
-				res[j] = bWork[i] != 0;
-				for (var z = 0; z < aWork.height; ++z) {
-					if (aWork[z][j-vars_set] && res[j]) {
-						--bWork[z];
+				res[idxs[j]] = bWork[i] !== 0;
+				if (res[idxs[j]]) {
+					for (var z = 0; z < aWork.height; ++z) {
+						if (aWork[z][j]) {
+							--bWork[z];
+						}
 					}
 				}
-				aWork = copy_matrix_wo_col(aWork, j-vars_set);
-				++vars_set;
+				aWork = copy_matrix_wo_col(aWork, j);
+				idxs = create_map(aWork.width, function(i) {
+					return idxs[i + (i >= j)];
+				});
+				--j;
 			}
 			bWork.splice(i, 1);
 			aWork = copy_matrix_wo_row(aWork, i--);
@@ -195,8 +201,8 @@ function solve_for_rules (A, B, min, max) {
 
 	if (aWork.width === 0) {
 
-		for (var i = 0; i < B.length; ++i) {
-			if (B[i] != 0) {
+		for (var i = 0; i < bWork.length; ++i) {
+			if (bWork[i] !== 0) {
 				return [];
 			}
 		}
@@ -213,10 +219,10 @@ function solve_for_rules (A, B, min, max) {
 
 	/* Assuming the selected variable is `true` */
 	{
-		console.log('TRUE');
 		var newB = create_map(bWork.length, function(i) {
-			return A[i][splitIdx] ? bWork[i] - 1 : bWork[i];
+			return aWork[i][splitIdx] ? bWork[i] - 1 : bWork[i];
 		});
+		console.log('TRUE', {newB: newB}, splitIdx);
 		var r = solve_for_rules (aWoSplit, newB, min - 1, max - 1);
 		if (r.length > 0) {
 			res = res.concat(r.map(function(el) {
@@ -224,10 +230,11 @@ function solve_for_rules (A, B, min, max) {
 		}
 		console.log('OUT_TRUE');
 	}
+	console.log({type: "A", res : res, resTempl : resTempl});
 	/* Assuming it's `false` */
 	{
-		console.log('FALSE');
 		var newB = bWork;
+		console.log('FALSE', {newB: newB});
 		var r = solve_for_rules (aWoSplit, newB, min, max);
 		if (r.length > 0) {
 			res = res.concat(r.map(function(el) {
@@ -236,7 +243,7 @@ function solve_for_rules (A, B, min, max) {
 		console.log('OUT_FALSE');
 	}
 
-	console.log({res : res, resTempl : resTempl});
+	console.log({type: "B", res : res, resTempl : resTempl});
 	res = res.map(function(el) {
 		for (var i = 0; i < resTempl.length; ++i) {
 			if (i in resTempl) {
