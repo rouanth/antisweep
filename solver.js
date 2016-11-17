@@ -1,9 +1,25 @@
 function test () {
-	var B = create_map(3, function(){return 1});
-	B[1] = 2;
+
+	function display(name, results) {
+		console.log(name + ": " + results.map(
+					function(c) { if (c) {
+						return "."
+					} else {
+						return "x"
+					}}).join('')
+			   );
+	}
+
+	function check_results(solution, correct) {
+		return solution.map(function(x) {
+			x.toString()
+		}).sort().toString() === correct.map(function(x) {
+			x.toString()
+		}).sort().toString();
+	}
 
 	/* AX = B :
-	 * x 1 2 1 x
+	 * x 1 2 1 x x
 	 * x x x x x
 	 */
 	var A = create_matrix(3, 8, function(){return false});
@@ -11,12 +27,41 @@ function test () {
 	A[1][2] = A[1][3] = A[1][4] = true;
 	A[2][3] = A[2][4] = A[2][5] = A[2][6] = true;
 
-	var solve_ab = solve_for_rules(A, B, 2, 3);
-	var solve_ab_cond = solve_ab.toString() ===
-		"false,false,true,false,true,false,false,true," +
-		"false,false,true,false,true,false,false,false";
+	var B = create_map(3, function(){return 1});
+	B[1] = 2;
 
-	console.log("Simple test: " + solve_ab_cond);
+	var solve_ab = solve_for_rules(A, B, 2, 3);
+	var solve_ab_cond = check_results(solve_ab,
+			[[false, false, true, false, true, false, false, true],
+			[false, false, true, false, true, false, false, false]]
+			);
+
+	/* CX = D :
+	 * 2 x x
+	 * x x 2
+	 */
+	var C = create_matrix(2, 4, function(){return true});
+	C[0][1] = false;
+	C[1][2] = false;
+
+	var D = create_map(2, function(){return 2});
+
+	var solve_cd = solve_for_rules(C, D, 3, 3);
+	var solve_cd_cond = check_results(solve_cd,
+			[[true, true, true, false],
+			[false, true, true, true]]);
+
+	/* EX = F :
+	 * x 1 x
+	 */
+	var E = create_matrix(1, 2, function(){return true});
+	var F = create_map(1, function(){return 1});
+
+	var solve_ef = solve_for_rules(E, F, 1, 1);
+	var solve_ef_cond = check_results(solve_ef,
+			[[true, false], [false, true]]);
+
+	display("Simple tests", [solve_ab_cond, solve_cd_cond, solve_ef_cond]);
 
 	/* CX = B, slightly artificial example:
 	 * 1 _ 1
@@ -32,7 +77,7 @@ function test () {
 	var elim_cb_cond = elim_cb.A.height === 0 && elim_cb.B.length === 0 &&
 		elim_cb.res.toString() === "true,true,false";
 
-	console.log("Elimination of obvious rules: " + elim_cb_cond);
+	display("Elimination of obvious rules", [elim_cb_cond]);
 
 	/* DX = B:
 	 * 1 2 x x 1
