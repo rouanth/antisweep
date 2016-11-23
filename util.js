@@ -2,6 +2,27 @@ function isInt(n) {
 	return Number(n) === n && n % 1 === 0;
 }
 
+var fact_arr = [1, 1];
+function factorial(n) {
+	for (var i = 2; i <= n; ++i) {
+		fact_arr[i] = i * fact_arr[i-1];
+	}
+	return fact_arr[n];
+}
+
+function permutation(arr, n) {
+	var perm = [];
+	var rest = arr.slice();
+	for (var i = 0; i < arr.length; ++i) {
+		var f = factorial(arr.length - i - 1);
+		var pos = Math.floor(n / f);
+		n = n % f;
+		perm.push(rest.splice(pos, 1)[0]);
+	}
+
+	return perm;
+}
+
 function create_map(n, func) {
 	var result = [];
 	var i;
