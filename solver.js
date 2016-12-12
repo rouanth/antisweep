@@ -285,7 +285,7 @@ function solve_for_rules (A, B, min, max) {
 		return [];
 	}
 
-	if (aWork.width === 0) {
+	if (aWork.width === 0 || aWork.height === 0) {
 
 		for (var i = 0; i < bWork.length; ++i) {
 			if (bWork[i] !== 0) {
@@ -294,42 +294,31 @@ function solve_for_rules (A, B, min, max) {
 		}
 
 		console.log('Success!');
-		return [resTempl];
+		var combs = combinations(aWork.width, min, max);
+		return combs.map(function(el) { return merge(resTempl, el); });
 	}
 
 	var res = [];
 
 	var splitIdx = partition_split_idx(aWork, bWork);
+	var maxAtIdx = Math.max.apply(null, create_map(aWork.height,
+				function(j) { return aWork[j][splitIdx]; }));
 
 	var aWoSplit = copy_matrix_wo_col(aWork, splitIdx);
 
-	/* Assuming the selected variable is `true` */
-	{
-		var newB = create_map(bWork.length, function(i) {
-			return aWork[i][splitIdx] ? bWork[i] - 1 : bWork[i];
+	for (var i = maxAtIdx; i >= 0; --i) {
+		var newB = create_map(bWork.length, function(j) {
+			return bWork[j] - (aWork[j][splitIdx] ? i : 0);
 		});
-		console.log('TRUE', {newB: newB}, splitIdx);
-		var r = solve_for_rules (aWoSplit, newB, min - 1, max - 1);
+		console.log({i: i, newB: newB, splitIdx: splitIdx});
+		var r = solve_for_rules (aWoSplit, newB, min - i, max - i);
 		if (r.length > 0) {
 			res = res.concat(r.map(function(el) {
-				el.splice(splitIdx, 0, true); return el;}));
+				el.splice(splitIdx, 0, i); return el;}));
 		}
-		console.log('OUT_TRUE');
-	}
-	console.log({type: "A", res : res, resTempl : resTempl});
-	/* Assuming it's `false` */
-	{
-		var newB = bWork;
-		console.log('FALSE', {newB: newB});
-		var r = solve_for_rules (aWoSplit, newB, min, max);
-		if (r.length > 0) {
-			res = res.concat(r.map(function(el) {
-				el.splice(splitIdx, 0, false); return el;}));
-		}
-		console.log('OUT_FALSE');
+		console.log({Out: i, res: res});
 	}
 
-	console.log({type: "B", res : res, resTempl : resTempl});
 	res = res.map(function(el) {
 		for (var i = 0; i < resTempl.length; ++i) {
 			if (i in resTempl) {
