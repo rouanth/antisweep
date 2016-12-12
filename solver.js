@@ -202,6 +202,47 @@ function partition_split_idx (A, B) {
 	return null;
 }
 
+function combinations (n, kmin, kmax) {
+	if (kmax < 0 || n < kmin) {
+		return [];
+	}
+
+	if (n === 0) {
+		return [[]];
+	}
+
+	if (n === 1) {
+		var res = [];
+		if (kmax > 0) {
+			res.push([1]);
+		}
+		if (kmin <= 0) {
+			res.push([0]);
+		}
+		console.log(res);
+		return res;
+	}
+
+	var combsPlus = combinations (n-1, kmin-1, kmax-1);
+	var combsMin  = combinations (n-1, kmin,   kmax);
+
+	combsPlus.map(function (el) { el.splice(0, 0, 1); return el; });
+	combsMin.map( function (el) { el.splice(0, 0, 0); return el; });
+        return combsPlus.concat(combsMin);
+}
+
+function merge (arr1, arr2) {
+	var s = arr1.slice();
+	var lp = 0;
+	for (var i = 0; i < arr2.length; ++i) {
+		while (lp in s) {
+			++lp;
+		}
+		s[lp] = arr2[i];
+	}
+	return s;
+}
+
 /* Find all possible solutions for A * X = B assuming that both a_ij and x_i
  * are in {true, false}.
  *
