@@ -1,4 +1,11 @@
-solver = { }
+solver = {
+	debug: false,
+	log: function () {
+		if (this.debug) {
+			console.log.apply(console, arguments);
+		}
+	}
+}
 
 solver.test = function test () {
 
@@ -90,10 +97,12 @@ solver.test = function test () {
 	D[1][0] = D[1][1] = D[1][2] = true;
 	D[2][3] = D[2][4] = D[2][5] = true;
 
+	var split_db = this.split_at_components(D, B);
+
 	return {
 		solve_ab : solve_ab,
 		elim_cb  : elim_cb,
-		split    : this.split_at_components(D, B)
+		split    : split_db
 	};
 }
 
@@ -224,10 +233,10 @@ solver.solve_for_rules = function solve_for_rules (A, B, min, max) {
 		}
 	}
 
-	console.log({A : A, B : B, min : min, max : max});
+	this.log({A : A, B : B, min : min, max : max});
 
 	var obvious = this.eliminate_obvious_rules(A, B);
-	console.log({After_elimination : obvious});
+	this.log({After_elimination : obvious});
 	if (obvious === null) {
 		return [];
 	}
@@ -241,7 +250,7 @@ solver.solve_for_rules = function solve_for_rules (A, B, min, max) {
 	}
 	min -= foundMines;
 	max -= foundMines;
-	console.log({min: min, max: max});
+	this.log({min: min, max: max});
 
 	if (max < 0 || aWork.width < min) {
 		return [];
@@ -255,7 +264,7 @@ solver.solve_for_rules = function solve_for_rules (A, B, min, max) {
 			}
 		}
 
-		console.log('Success!');
+		this.log('Success!');
 		var combs = combinations_arr(aWork.width, min, max);
 		return combs.map(function(el) {
 			return merge_in(resTempl, el); });
@@ -273,13 +282,13 @@ solver.solve_for_rules = function solve_for_rules (A, B, min, max) {
 		var newB = create_map(bWork.length, function(j) {
 			return bWork[j] - (aWork[j][splitIdx] ? i : 0);
 		});
-		console.log({i: i, newB: newB, splitIdx: splitIdx});
+		this.log({i: i, newB: newB, splitIdx: splitIdx});
 		var r = this.solve_for_rules (aWoSplit, newB, min - i, max - i);
 		if (r.length > 0) {
 			res = res.concat(r.map(function(el) {
 				el.splice(splitIdx, 0, i); return el;}));
 		}
-		console.log({Out: i, res: res});
+		this.log({Out: i, res: res});
 	}
 
 	res = res.map(function(el) {
