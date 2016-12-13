@@ -255,24 +255,8 @@ function to_hex(c) {
 }
 
 function get_color(prob) {
-	var red, green, blue;
-	switch (prob) {
-		case 100 :
-			red = 255;
-			green = 0;
-			break;
-		case 0   :
-			red = 0;
-			green = 255;
-			break;
-		case -1  :
-			return undefined
-		default  :
-				red = 255 * prob;
-				green = 255 * (1 - prob);
-	}
-	var red   = to_hex(red);
-	var green = to_hex(green);
-	var blue  = to_hex(0);
-	return "#" + red + green + blue;
+	return prob === -1 ? undefined : ("#" +
+			to_hex(255 * Math.pow(prob, 1.1)) +
+			to_hex(255 * (1 - Math.pow(prob, 0.4))) +
+			to_hex(0));
 }
