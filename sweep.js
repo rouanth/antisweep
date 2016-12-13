@@ -220,7 +220,8 @@ function solve() {
 	}
 
 	var mines = csweep.mines - bomb_idxs.length;
-	var res = solve_for_rules(A, B, mines, mines);
+
+	var res = solver.solve_for_rules(A, B, mines, mines);
 
 	if (res) {
 		var probs = create_matrix(csweep.field.height, w,

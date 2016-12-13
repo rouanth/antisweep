@@ -1,4 +1,6 @@
-function test () {
+solver = { }
+
+solver.test = function test () {
 
 	function display(name, results) {
 		console.log(name + ": " + results.map(
@@ -30,7 +32,7 @@ function test () {
 	var B = create_map(3, function(){return 1});
 	B[1] = 2;
 
-	var solve_ab = solve_for_rules(A, B, 2, 3);
+	var solve_ab = this.solve_for_rules(A, B, 2, 3);
 	var solve_ab_cond = check_results(solve_ab,
 			[[false, false, true, false, true, false, false, true],
 			[false, false, true, false, true, false, false, false]]
@@ -46,7 +48,7 @@ function test () {
 
 	var D = create_map(2, function(){return 2});
 
-	var solve_cd = solve_for_rules(C, D, 3, 3);
+	var solve_cd = this.solve_for_rules(C, D, 3, 3);
 	var solve_cd_cond = check_results(solve_cd,
 			[[true, true, true, false],
 			[false, true, true, true]]);
@@ -57,7 +59,7 @@ function test () {
 	var E = create_matrix(1, 2, function(){return true});
 	var F = create_map(1, function(){return 1});
 
-	var solve_ef = solve_for_rules(E, F, 1, 1);
+	var solve_ef = this.solve_for_rules(E, F, 1, 1);
 	var solve_ef_cond = check_results(solve_ef,
 			[[true, false], [false, true]]);
 
@@ -73,7 +75,7 @@ function test () {
 	C[1][0] = C[1][1] = C[1][2] = true;
 	C[2][1] = true;
 
-	var elim_cb = eliminate_obvious_rules(C, B);
+	var elim_cb = this.eliminate_obvious_rules(C, B);
 	var elim_cb_cond = elim_cb.A.height === 0 && elim_cb.B.length === 0 &&
 		elim_cb.res.toString() === "true,true,false";
 
@@ -91,11 +93,11 @@ function test () {
 	return {
 		solve_ab : solve_ab,
 		elim_cb  : elim_cb,
-		split    : split_at_components(D, B)
+		split    : this.split_at_components(D, B)
 	};
 }
 
-function eliminate_obvious_rules (A, B) {
+solver.eliminate_obvious_rules = function eliminate_obvious_rules (A, B) {
 	var res = [];
 	var aWork = copy_matrix(A);
 	var bWork = B.slice();
@@ -149,7 +151,7 @@ function eliminate_obvious_rules (A, B) {
 	}
 }
 
-function split_at_components (A, B) {
+solver.split_at_components = function split_at_components (A, B) {
 	var res = [];
 	var assigned = Object.create(null);
 	for (var i = 0; i < A.height; ++i) {
@@ -192,7 +194,7 @@ function split_at_components (A, B) {
 	return res;
 }
 
-function partition_split_idx (A, B) {
+solver.partition_split_idx = function partition_split_idx (A, B) {
 	for (var idx = 0; idx < A.width; ++idx) {
 		for (var r = 0; r < A.height; ++r) {
 			if (A[r][idx])
@@ -210,7 +212,7 @@ function partition_split_idx (A, B) {
  *              of this parameter.
  * */
 
-function solve_for_rules (A, B, min, max) {
+solver.solve_for_rules = function solve_for_rules (A, B, min, max) {
 	var min = isInt(min) ? min : -1;
 	var max = isInt(max) ? max : Infinity;
 
@@ -224,7 +226,7 @@ function solve_for_rules (A, B, min, max) {
 
 	console.log({A : A, B : B, min : min, max : max});
 
-	var obvious = eliminate_obvious_rules(A, B);
+	var obvious = this.eliminate_obvious_rules(A, B);
 	console.log({After_elimination : obvious});
 	if (obvious === null) {
 		return [];
@@ -239,6 +241,7 @@ function solve_for_rules (A, B, min, max) {
 	}
 	min -= foundMines;
 	max -= foundMines;
+	console.log({min: min, max: max});
 
 	if (max < 0 || aWork.width < min) {
 		return [];
@@ -260,7 +263,7 @@ function solve_for_rules (A, B, min, max) {
 
 	var res = [];
 
-	var splitIdx = partition_split_idx(aWork, bWork);
+	var splitIdx = this.partition_split_idx(aWork, bWork);
 	var maxAtIdx = Math.max.apply(null, create_map(aWork.height,
 				function(j) { return aWork[j][splitIdx]; }));
 
@@ -271,7 +274,7 @@ function solve_for_rules (A, B, min, max) {
 			return bWork[j] - (aWork[j][splitIdx] ? i : 0);
 		});
 		console.log({i: i, newB: newB, splitIdx: splitIdx});
-		var r = solve_for_rules (aWoSplit, newB, min - i, max - i);
+		var r = this.solve_for_rules (aWoSplit, newB, min - i, max - i);
 		if (r.length > 0) {
 			res = res.concat(r.map(function(el) {
 				el.splice(splitIdx, 0, i); return el;}));
