@@ -102,12 +102,11 @@ function combinations_arr (n, kmin, kmax) {
 		if (kmin <= 0) {
 			res.push([0]);
 		}
-		console.log(res);
 		return res;
 	}
 
-	var combsPlus = combinations (n-1, kmin-1, kmax-1);
-	var combsMin  = combinations (n-1, kmin,   kmax);
+	var combsPlus = combinations_arr (n-1, kmin-1, kmax-1);
+	var combsMin  = combinations_arr (n-1, kmin,   kmax);
 
 	combsPlus.map(function (el) { el.splice(0, 0, 1); return el; });
 	combsMin.map( function (el) { el.splice(0, 0, 0); return el; });
