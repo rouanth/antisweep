@@ -21,9 +21,9 @@ solver.test = function test () {
 
 	function check_results(solution, correct) {
 		return solution.map(function(x) {
-			x.toString()
+			return x.toString()
 		}).sort().toString() === correct.map(function(x) {
-			x.toString()
+			return x.toString()
 		}).sort().toString();
 	}
 
@@ -41,8 +41,8 @@ solver.test = function test () {
 
 	var solve_ab = this.solve_for_rules(A, B, 2, 3);
 	var solve_ab_cond = check_results(solve_ab,
-			[[false, false, true, false, true, false, false, true],
-			[false, false, true, false, true, false, false, false]]
+			[[0, 0, 1, 0, 1, 0, 0, 1],
+			[0, 0, 1, 0, 1, 0, 0, 0]]
 			);
 
 	/* CX = D :
@@ -57,8 +57,8 @@ solver.test = function test () {
 
 	var solve_cd = this.solve_for_rules(C, D, 3, 3);
 	var solve_cd_cond = check_results(solve_cd,
-			[[true, true, true, false],
-			[false, true, true, true]]);
+			[[1, 1, 1, 0],
+			[0, 1, 1, 1]]);
 
 	/* EX = F :
 	 * x 1 x
@@ -68,7 +68,7 @@ solver.test = function test () {
 
 	var solve_ef = this.solve_for_rules(E, F, 1, 1);
 	var solve_ef_cond = check_results(solve_ef,
-			[[true, false], [false, true]]);
+			[[1, 0], [0, 1]]);
 
 	display("Simple tests", [solve_ab_cond, solve_cd_cond, solve_ef_cond]);
 
@@ -84,7 +84,7 @@ solver.test = function test () {
 
 	var elim_cb = this.eliminate_obvious_rules(C, B);
 	var elim_cb_cond = elim_cb.A.height === 0 && elim_cb.B.length === 0 &&
-		elim_cb.res.toString() === "true,true,false";
+		elim_cb.res.toString() === "1,1,0";
 
 	display("Elimination of obvious rules", [elim_cb_cond]);
 
@@ -134,7 +134,7 @@ solver.eliminate_obvious_rules = function eliminate_obvious_rules (A, B) {
 				if (!aWork[i][j]) {
 					continue;
 				}
-				res[idxs[j]] = bWork[i] !== 0;
+				res[idxs[j]] = (bWork[i] !== 0) * aWork[i][j];
 				if (res[idxs[j]]) {
 					for (var z = 0; z < aWork.height; ++z) {
 						if (aWork[z][j]) {
