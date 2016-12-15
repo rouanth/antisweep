@@ -1,399 +1,306 @@
-function create_map(n, func) {
-        return Array.apply(null, new Array(+n)).map(function(x, index, arr) {
-                return func(index);
-        });
+solver = {
+	debug: false,
+	log: function () {
+		if (this.debug) {
+			console.log.apply(console, arguments);
+		}
+	}
 }
 
-function foreach_obj(obj, func) {
-        for (var key in obj) {
-                if (obj.hasOwnProperty(key)) {
-                        func(obj[key], key);
-                }
-        }
+solver.test = function test () {
+
+	function display(name, results) {
+		console.log(name + ": " + results.map(
+					function(c) { if (c) {
+						return "."
+					} else {
+						return "x"
+					}}).join('')
+			   );
+	}
+
+	function check_results(solution, correct) {
+		return solution.map(function(x) {
+			return x.toString()
+		}).sort().toString() === correct.map(function(x) {
+			return x.toString()
+		}).sort().toString();
+	}
+
+	/* AX = B :
+	 * x 1 2 1 x x
+	 * x x x x x
+	 */
+	var A = create_matrix(3, 8, function(){return false});
+	A[0][0] = A[0][1] = A[0][2] = A[0][3] = true;
+	A[1][2] = A[1][3] = A[1][4] = true;
+	A[2][3] = A[2][4] = A[2][5] = A[2][6] = true;
+
+	var B = create_map(3, function(){return 1});
+	B[1] = 2;
+
+	var solve_ab = this.solve_for_rules(A, B, 2, 3);
+	var solve_ab_cond = check_results(solve_ab,
+			[[0, 0, 1, 0, 1, 0, 0, 1],
+			[0, 0, 1, 0, 1, 0, 0, 0]]
+			);
+
+	/* CX = D :
+	 * 2 x x
+	 * x x 2
+	 */
+	var C = create_matrix(2, 4, function(){return true});
+	C[0][1] = false;
+	C[1][2] = false;
+
+	var D = create_map(2, function(){return 2});
+
+	var solve_cd = this.solve_for_rules(C, D, 3, 3);
+	var solve_cd_cond = check_results(solve_cd,
+			[[1, 1, 1, 0],
+			[0, 1, 1, 1]]);
+
+	/* EX = F :
+	 * x 1 x
+	 */
+	var E = create_matrix(1, 2, function(){return true});
+	var F = create_map(1, function(){return 1});
+
+	var solve_ef = this.solve_for_rules(E, F, 1, 1);
+	var solve_ef_cond = check_results(solve_ef,
+			[[1, 0], [0, 1]]);
+
+	display("Simple tests", [solve_ab_cond, solve_cd_cond, solve_ef_cond]);
+
+	/* CX = B, slightly artificial example:
+	 * 1 _ 1
+	 * x 2 x
+	 * _ x _
+	 */
+	var C = create_matrix(3, 3, function(){return false});
+	C[0][0] = true;
+	C[1][0] = C[1][1] = C[1][2] = true;
+	C[2][1] = true;
+
+	var elim_cb = this.eliminate_obvious_rules(C, B);
+	var elim_cb_cond = elim_cb.A.height === 0 && elim_cb.B.length === 0 &&
+		elim_cb.res.toString() === "1,1,0";
+
+	display("Elimination of obvious rules", [elim_cb_cond]);
+
+	/* DX = B:
+	 * 1 2 x x 1
+	 * _ x x x x
+	 */
+	var D = create_matrix(3, 6, function(){return false});
+	D[0][0] = true;
+	D[1][0] = D[1][1] = D[1][2] = true;
+	D[2][3] = D[2][4] = D[2][5] = true;
+
+	var split_db = this.split_at_components(D, B);
+
+	return {
+		solve_ab : solve_ab,
+		elim_cb  : elim_cb,
+		split    : split_db
+	};
 }
 
-function create_matrix(n, m, func) {
-        var result = create_map(n, function(i) {
-                return create_map(m, function (j) {
-                        return func(i, j);
-                })
-        });
-        result.width = m;
-        result.height = n;
-        result.matrForEach = function (callback, thisArg) {
-                var that = thisArg ? thisArg : this;
-                for (var i = 0; i < result.height; ++i) {
-                        for (var j = 0; j < result.width; ++j) {
-                                callback(that[i][j], i, j, that);
-                        }
-                }
-        };
-        return result;
+solver.eliminate_obvious_rules = function eliminate_obvious_rules (A, B) {
+	var res = [];
+	var aWork = copy_matrix(A);
+	var bWork = B.slice();
+
+	var idxs = create_map(aWork.width, function(i) { return i });
+
+	var obvious;
+	do {
+		obvious = false;
+
+		for (var i = 0; i < aWork.height; ++i) {
+			var rowCnt = 0;
+			for (var j = 0; j < aWork.width; ++j) {
+				rowCnt += aWork[i][j];
+			}
+			if ((bWork[i] > rowCnt) || (bWork[i] < 0)) {
+				return null;
+			}
+			if (bWork[i] && (bWork[i] !== rowCnt)) {
+				continue;
+			}
+
+			obvious = true;
+			for (var j = 0; j < aWork.width; ++j){
+				if (!aWork[i][j]) {
+					continue;
+				}
+				res[idxs[j]] = (bWork[i] !== 0) * aWork[i][j];
+				if (res[idxs[j]]) {
+					for (var z = 0; z < aWork.height; ++z) {
+						if (aWork[z][j]) {
+							--bWork[z];
+						}
+					}
+				}
+				aWork = copy_matrix_wo_col(aWork, j);
+				idxs = create_map(aWork.width, function(i) {
+					return idxs[i + (i >= j)];
+				});
+				--j;
+			}
+			bWork.splice(i, 1);
+			aWork = copy_matrix_wo_row(aWork, i--);
+		}
+	} while (obvious);
+
+	return {
+		A : aWork,
+		B : bWork,
+		res : res
+	}
 }
 
-function copy_matrix(matr) {
-        var result = [];
-        result.width  = matr.width;
-        result.height = matr.height;
-        for (var i = 0; i < matr.height; ++i) {
-                result[i] = [];
-                for (var j = 0; j < matr.width; ++j) {
-                        result[i][j] = matr[i][j];
-                }
-        }
-        result.matrForEach = matr.matrForEach;
-        return result;
+solver.split_at_components = function split_at_components (A, B) {
+	var res = [];
+	var assigned = Object.create(null);
+	for (var i = 0; i < A.height; ++i) {
+		if (i in assigned)
+			continue;
+
+		var comp = [];
+		var curr = Object.create(null);
+		for (var j = 0; j < A.width; ++j) {
+			if (A[i][j]) {
+				curr[j] = true;
+			}
+		}
+
+		for (var k = i; k < A.height; ++k) {
+			if (k in assigned)
+				continue;
+
+			for (var j = 0; j < A.width; ++j) {
+				if (curr[j] && A[k][j]) {
+					comp.push(k);
+					assigned[k] = true;
+					break;
+				}
+			}
+		}
+
+		var a = create_matrix(comp.length, A.width, function (i, j) {
+			return A[comp[i]][j];
+		});
+
+		var b = create_map(comp.length, function(i) {
+			return B[comp[i]];
+		});
+
+		var ixs = comp;
+
+		res.push({a: a, b: b, ixs: ixs});
+	}
+	return res;
 }
 
-function Sweep(width, height, mines) {
-        this.mines = +mines;
-        this.field = create_matrix(height, width,
-                        function() { return new Cell('q') });
+solver.partition_split_idx = function partition_split_idx (A, B) {
+	for (var idx = 0; idx < A.width; ++idx) {
+		for (var r = 0; r < A.height; ++r) {
+			if (A[r][idx])
+				return idx;
+		}
+	}
+	return null;
 }
 
-function Cell(type) {
-        function is_of_type (type) {
-                return function () {
-                        return this.type === type
-                }
-        }
+/* Find all possible solutions for A * X = B assuming that both a_ij and x_i
+ * are in {true, false}.
+ *
+ * A, B      -- matrices to be solved;
+ * {min|max} -- if a number, sum of all x_i must be {more|less} than the value
+ *              of this parameter.
+ * */
 
-        this.type = type;
-        this.isUnknown = is_of_type('q');
-        this.isEmpty   = is_of_type('0');
-        this.isFree    = is_of_type('f');
-        this.isBomb    = is_of_type('b');
-        this.isNumber  = function () {
-                var eln = parseInt(this.type, 10);
-                return !isNaN(eln) && (eln !== 0)
-        };
+solver.solve_for_rules = function solve_for_rules (A, B, min, max) {
+	var min = isInt(min) ? min : -1;
+	var max = isInt(max) ? max : Infinity;
+
+	if (B.length != A.height) {
+		throw {
+			name : 'extended_matrix_incorrect',
+			text : B + ' can\'t be an extension of ' + A +
+				' as their dimensions don\'t match'
+		}
+	}
+
+	this.log({A : A, B : B, min : min, max : max});
+
+	var obvious = this.eliminate_obvious_rules(A, B);
+	this.log({After_elimination : obvious});
+	if (obvious === null) {
+		return [];
+	}
+	var aWork = obvious.A;
+	var bWork = obvious.B;
+	var resTempl = obvious.res;
+
+	var foundMines = 0;
+	for (var i = 0; i < resTempl.length; ++i) {
+		foundMines += i in resTempl && resTempl[i];
+	}
+	min -= foundMines;
+	max -= foundMines;
+	this.log({min: min, max: max});
+
+	if (max < 0 || aWork.width < min) {
+		return [];
+	}
+
+	if (aWork.width === 0 || aWork.height === 0) {
+
+		for (var i = 0; i < bWork.length; ++i) {
+			if (bWork[i] !== 0) {
+				return [];
+			}
+		}
+
+		this.log('Success!');
+		var combs = combinations_arr(aWork.width, min, max);
+		return combs.map(function(el) {
+			return merge_in(resTempl, el); });
+	}
+
+	var res = [];
+
+	var splitIdx = this.partition_split_idx(aWork, bWork);
+	var maxAtIdx = Math.max.apply(null, create_map(aWork.height,
+				function(j) { return aWork[j][splitIdx]; }));
+
+	var aWoSplit = copy_matrix_wo_col(aWork, splitIdx);
+
+	for (var i = maxAtIdx; i >= 0; --i) {
+		var newB = create_map(bWork.length, function(j) {
+			return bWork[j] - (aWork[j][splitIdx] ? i : 0);
+		});
+		this.log({i: i, newB: newB, splitIdx: splitIdx});
+		var r = this.solve_for_rules (aWoSplit, newB, min - i, max - i);
+		if (r.length > 0) {
+			res = res.concat(r.map(function(el) {
+				el.splice(splitIdx, 0, i); return el;}));
+		}
+		this.log({Out: i, res: res});
+	}
+
+	res = res.map(function(el) {
+		for (var i = 0; i < resTempl.length; ++i) {
+			if (i in resTempl) {
+				el.splice(i, 0, resTempl[i]);
+			}
+		}
+		return el;
+	});
+
+	return res;
+
 }
 
-function Position2D(row, col) {
-        this.row = +row;
-        this.col = +col;
-        this.toString = function () { return '(' + row + ', ' + col + ')' };
-}
-
-var solver = {};
-
-solver.solve = function (swp) {
-        try {
-                var calc = this.calculate(swp);
-        } catch (e) {
-                alert(e.message);
-                return
-        }
-        calc.new_field.matrForEach(function (curr, i, j) {
-                if (!curr.isFree()) {
-                        swp.field[i][j] = curr;
-                }
-        });
-        return calc.probs;
-}
-
-function fold_around (mi, mj, Mi, Mj, i, j, a, accFunc) {
-        if ((mi != i) && (mj != j)) { a = accFunc(a, i-1, j-1) }
-        if ((mi != i) && (Mj != j)) { a = accFunc(a, i-1, j+1) }
-        if ((Mi != i) && (mj != j)) { a = accFunc(a, i+1, j-1) }
-        if ((Mi != i) && (Mj != j)) { a = accFunc(a, i+1, j+1) }
-        if ((mi != i)             ) { a = accFunc(a, i-1, j  ) }
-        if ((Mi != i)             ) { a = accFunc(a, i+1, j  ) }
-        if (             (mj != j)) { a = accFunc(a, i  , j-1) }
-        if (             (Mj != j)) { a = accFunc(a, i  , j+1) }
-        return a;
-}
-
-function Lead (required, unknowns) {
-        this.required = +required;
-        this.unknowns = unknowns;
-}
-
-solver.get_rules = function (field) {
-        var w = field.width;
-        var h = field.height;
-
-        function cell_name (i, j) {
-                return [i, j].join(';');
-        }
-
-        function acc_f (el, cell) {
-                if (!el.isBomb() && !el.isUnknown()) {
-                        return function (a) { return a }
-                }
-
-                return function (a, i, j) {
-                        var e = field[i][j];
-                        if (!e.isNumber() && !e.isEmpty()) {
-                                return a;
-                        }
-
-                        var name = cell_name(i, j);
-                        if (!a[name]) {
-                                a[name] = new Lead(e.type, []);
-                                a[name].pos = new Position2D(i, j);
-                        }
-
-                        if (el.isBomb()) {
-                                --a[name].required;
-                        } else {
-                                a[name].unknowns.push(cell);
-                                cell.used = true;
-                        }
-                        return a;
-                }
-        }
-
-        var unknowns = [];
-        var leads    = {};
-        var free_unknowns = [];
-        field.matrForEach(function (el, i, j) {
-                if (!el.isUnknown() && !el.isBomb()) {
-                        return
-                }
-                var cell = new Position2D(i, j);
-                cell.used = false;
-                leads = fold_around(0, 0, h-1, w-1, i, j, leads,
-                                acc_f(el, cell));
-                if (el.isUnknown()) {
-                        (cell.used ? unknowns : free_unknowns).push(cell);
-                }
-                delete cell.used;
-        });
-
-        this.delete_empty_rules();
-
-        return {
-                unknowns : unknowns,
-                leads    : leads,
-                free_unknowns : free_unknowns
-        }
-}
-
-solver.delete_empty_rules = function (leads) {
-        foreach_obj(leads, function (lead, key) {
-                // Check for validity
-                if ((lead.required > lead.unknowns.length) ||
-                                (lead.required < 0)) {
-                        throw {
-                                name    : 'unexpected_cell_type',
-                                pos     : lead.pos,
-                                message : 'The vicinity of the cell ' +
-                                        lead.pos + ' conflicts with its type'
-                        }
-                }
-                // Remove the rules that can't provide any new information
-                if (!lead.required && !lead.unknowns.length) {
-                        delete leads[key];
-                }
-        });
-}
-
-solver.guess_cell_types = function(field) {
-        var h = field.height;
-        var w = field.width;
-
-        function near_unknown_f (a, i, j) {
-                var el = field[i][j];
-                a.near_unknown = a.near_unknown || el.isUnknown();
-                if (el.isBomb()) {
-                        ++a.mines_around;
-                }
-                return a
-        }
-
-        field.matrForEach(function (el, i, j) {
-                var el = field[i][j];
-                if (!el.isFree()) {
-                        return
-                }
-
-                var info = {
-                        near_unknown : false,
-                        mines_around : 0
-                };
-
-                info = fold_around(0, 0, h-1, w-1, i, j, info,
-                                near_unknown_f);
-
-                field[i][j].type = info.near_unknown ? 'q' :
-                        info.mines_around + "";
-        });
-
-        return field;
-}
-
-solver.calculate = function(swp) {
-        var field = copy_matrix(swp.field);
-        var totalUnknown = 0;
-
-        var obvious;
-        var rules = this.get_rules(field);
-        do {
-                obvious = 0;
-                foreach_obj(rules.leads, function(lead) {
-                        if (lead.required && (lead.required !==
-                                                lead.unknowns.length))
-                        { return }
-
-                        var type = lead.required ? 'b' : 'f';
-                        lead.unknowns.forEach(function (e) {
-                                field[e.row][e.col] = new Cell(type);
-                        });
-                        obvious += lead.unknowns.length;
-                });
-                rules = this.get_rules(field);
-        } while (obvious);
-
-        var bombs_found = 0;
-
-        var probs = create_matrix(field.height, field.width, function (i, j) {
-                var el = field[i][j];
-                if (el.isUnknown()) {
-                        return -2;
-                } else if (el.isBomb()) {
-                        ++bombs_found;
-                        return 100;
-                } else if (el.isFree()) {
-                        return 0;
-                } else {
-                        return -1;
-                }
-        });
-        var res = this.calculate_probabilities(rules, swp.mines - bombs_found);
-        var norm = this.normalized(res, rules.free_unknowns.length);
-        var update_probs = function (is_bound) {
-                return function (val, index) {
-                        var curr_prob = is_bound ? norm.bound[index] :
-                                norm.free;
-                        probs[val.row][val.col] = curr_prob;
-                        if (curr_prob === 0) {
-                                field[val.row][val.col].type = 'f';
-                        } else if (curr_prob === 100) {
-                                field[val.row][val.col].type = 'b';
-                        }
-                }
-        };
-        rules.unknowns.forEach(update_probs(true));
-        rules.free_unknowns.forEach(update_probs(false));
-
-        return {
-                probs : probs,
-                new_field : this.guess_cell_types(field)
-        }
-}
-
-solver.count_mines = function (field) {
-        var result = 0;
-        field.matrForEach(function (el) {
-                if (el.isBomb()) {
-                        ++result;
-                }
-        });
-        return result;
-}
-
-solver.is_correct = function (rules, mines_left) {
-        var result = true;
-        foreach_obj(rules.leads, function(lead) {
-                var consider = true;
-                var current = (lead.unknowns.filter(function (val) {
-                        consider = consider && val.traversed;
-                        return val.set
-                }).length === lead.required);
-                if (consider) {
-                        result = result && current;
-                }
-        });
-        return result;
-}
-
-function combinations (n, k) {
-        if (n < k) {
-                return 0;
-        }
-
-        var i;
-        var r = 1;
-        for (i = k + 1; i <= n; ++i) {
-                r *= i;
-        }
-        for (i = 1; i <= (n - k); ++i) {
-                r /= i;
-        }
-        return r;
-}
-
-solver.calculate_probabilities = function (rules, mines_left, index) {
-        index = index ? index : 0;
-        var result = {
-                probs : create_map(rules.unknowns.length, function () {
-                        return 0
-                }),
-                prob_free : 0,
-                total : 0
-        }
-
-        if (index === rules.unknowns.length) {
-                if ((rules.free_unknowns.length < mines_left) || 
-                                (!this.is_correct(rules, mines_left)))
-                { return result }
-
-                var modifier = combinations(rules.free_unknowns.length,
-                                mines_left);
-
-                var probs = [];
-                rules.unknowns.forEach(function (val, index) {
-                        if (val.set) {
-                                result.probs[index] += modifier;
-                        }
-                });
-
-                result.prob_free += mines_left * modifier;
-                result.total += modifier;
-                return result;
-        }
-
-        var s;
-        var curr = rules.unknowns[index];
-
-        if (!this.is_correct(rules, mines_left)) {
-                return result;
-        }
-
-        curr.traversed = true;
-
-        if (mines_left) {
-                curr.set = true;
-                --mines_left;
-                s = this.calculate_probabilities(rules, mines_left,
-                                index + 1);
-                result.total += s.total;
-                s.probs.forEach(function (val, index) {
-                        result.probs[index] += val;
-                });
-                result.prob_free += s.prob_free;
-                curr.set = false;
-                ++mines_left;
-        }
-
-        s = this.calculate_probabilities(rules, mines_left,
-                        index + 1);
-        result.total += s.total;
-        result.prob_free += s.prob_free;
-        s.probs.forEach(function (val, index) {
-                result.probs[index] += val;
-        });
-
-        curr.traversed = false;
-        return result;
-}
-
-solver.normalized = function (s, free_unknowns_cnt) {
-        return {
-                bound : s.probs.map(function (val) {
-                        return val * 100 / s.total;
-                }),
-                free  : s.prob_free * 100 / (s.total * free_unknowns_cnt)
-        }
-}
