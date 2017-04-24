@@ -1,11 +1,11 @@
 function isInt(n) {
-	return Number(n) === n && n % 1 === 0;
+	return Number(n) === n && n % 1	=== 0;
 }
 
 var fact_arr = [1, 1];
 function factorial(n) {
-	for (var i = 2; i <= n; ++i) {
-		fact_arr[i] = i * fact_arr[i-1];
+	for (var i = 2;	i <= n;	++i) {
+		fact_arr[i] = i	* fact_arr[i-1];
 	}
 	return fact_arr[n];
 }
@@ -13,10 +13,10 @@ function factorial(n) {
 function permutation(arr, n) {
 	var perm = [];
 	var rest = arr.slice();
-	for (var i = 0; i < arr.length; ++i) {
-		var f = factorial(arr.length - i - 1);
-		var pos = Math.floor(n / f);
-		n = n % f;
+	for (var i = 0;	i < arr.length;	++i) {
+		var f =	factorial(arr.length - i - 1);
+		var pos	= Math.floor(n / f);
+		n = n %	f;
 		perm.push(rest.splice(pos, 1)[0]);
 	}
 
@@ -26,7 +26,7 @@ function permutation(arr, n) {
 function create_map(n, func) {
 	var result = [];
 	var i;
-	for (i = 0; i < n; ++i) {
+	for (i = 0; i <	n; ++i)	{
 		result.push(func(i));
 	}
 	return result;
@@ -40,12 +40,12 @@ function create_matrix(n, m, func) {
 		});
 	});
 	result.width = m;
-	result.height = n;
+	result.height =	n;
 	result.forEach = function (callback, thisArg) {
 		var that = thisArg || this;
-		for (i = 0; i < result.height; ++i) {
-			for (j = 0; j < result.width; ++j) {
-				callback(that[i][j], i, j, that);
+		for (i = 0; i <	result.height; ++i) {
+			for (j = 0; j <	result.width; ++j) {
+				callback(that[i][j], i,	j, that);
 			}
 		}
 	};
@@ -55,11 +55,11 @@ function create_matrix(n, m, func) {
 function copy_matrix(matr) {
 	var i, j;
 	var result = [];
-	result.width  = matr.width;
-	result.height = matr.height;
-	for (i = 0; i < matr.height; ++i) {
+	result.width  =	matr.width;
+	result.height =	matr.height;
+	for (i = 0; i <	matr.height; ++i) {
 		result[i] = [];
-		for (j = 0; j < matr.width; ++j) {
+		for (j = 0; j <	matr.width; ++j) {
 			result[i][j] = matr[i][j];
 		}
 	}
@@ -86,7 +86,7 @@ function cr_const(n) {
 }
 
 function combinations_arr (n, kmin, kmax) {
-	if (kmax < 0 || n < kmin) {
+	if (kmax < 0 ||	n < kmin) {
 		return [];
 	}
 
@@ -95,7 +95,7 @@ function combinations_arr (n, kmin, kmax) {
 	}
 
 	if (n === 1) {
-		var res = [];
+		var res	= [];
 		if (kmax > 0) {
 			res.push([1]);
 		}
@@ -105,8 +105,8 @@ function combinations_arr (n, kmin, kmax) {
 		return res;
 	}
 
-	var combsPlus = combinations_arr (n-1, kmin-1, kmax-1);
-	var combsMin  = combinations_arr (n-1, kmin,   kmax);
+	var combsPlus =	combinations_arr (n-1, kmin-1, kmax-1);
+	var combsMin  =	combinations_arr (n-1, kmin,   kmax);
 
 	combsPlus.map(function (el) { el.splice(0, 0, 1); return el; });
 	combsMin.map( function (el) { el.splice(0, 0, 0); return el; });
@@ -114,13 +114,13 @@ function combinations_arr (n, kmin, kmax) {
 }
 
 function merge_in (arr1, arr2) {
-	var s = arr1.slice();
+	var s =	arr1.slice();
 	var lp = 0;
-	for (var i = 0; i < arr2.length; ++i) {
-		while (lp in s) {
+	for (var i = 0;	i < arr2.length; ++i) {
+		while (lp in s)	{
 			++lp;
 		}
-		s[lp] = arr2[i];
+		s[lp] =	arr2[i];
 	}
 	return s;
 }
