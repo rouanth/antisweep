@@ -113,6 +113,34 @@ function combinations_arr (n, kmin, kmax) {
 	return combsPlus.concat(combsMin);
 }
 
+_factorial_cache = [1];
+function factorial (n) {
+	var n =	Math.max(n, 0);
+	if (!n in _factorial_cache) {
+		_factorial_cache[n] = n	* factorial(n-1);
+	}
+	return _factorial_cache[n];
+}
+
+_combinations_cache = [];
+function combinations (n, k) {
+	if (!n in _combinations_cache) {
+		_combinations_cache[n] = [];
+	}
+	if (!k in _combinations_cache[n]) {
+		_combinations_cache[n][k] = factorial(n) / factorial(k)	* factorial(n-k);
+	}
+	return _combinations_cache[n][k];
+}
+
+function combinations_range (n,	kmin, kmax) {
+	var r =	0;
+	for (var k = kmin; k <=	kmax; ++k) {
+		r += combinations(n, k);
+	}
+	return r;
+}
+
 function merge_in (arr1, arr2) {
 	var s =	arr1.slice();
 	var lp = 0;
